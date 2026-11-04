@@ -1,0 +1,15 @@
+{
+ "name":"leadpilot-search-private",
+ "main":"src/cloud.js",
+ "compatibility_date":"2026-10-01",
+ "workers_dev":true,
+ "preview_urls":false,
+ "assets":{"directory":"../dist","binding":"ASSETS","run_worker_first":["/api/*"]},
+ "vars":{"APP_ORIGIN":"https://a15532712102-commits.github.io","SEARCH_ENABLED":"false"},
+ "d1_databases":[{"binding":"DB","database_name":"leadpilot-cloud","database_id":"cc8d2e27-ff72-4356-bc0a-3425d1c70b8d","migrations_dir":"migrations"}],
+ "ratelimits":[
+  {"name":"REQUEST_LIMITER","namespace_id":"184301","simple":{"limit":30,"period":60}},
+  {"name":"COST_LIMITER","namespace_id":"184302","simple":{"limit":6,"period":60}},
+  {"name":"LOGIN_LIMITER","namespace_id":"184303","simple":{"limit":8,"period":60}}
+ ]
+}

@@ -1,48 +1,52 @@
-# LeadPilot 免费版 1.3.0
+# LeadPilot 云端手机工作台 2.0.0
 
-无需Brave、OpenAI密钥、银行卡或后端连接的单用户外贸工作台。原地址保持不变：
-https://a15532712102-commits.github.io/leadpilot-ai/
+正式入口：https://leadpilot-search-private.a15532712102.workers.dev/
 
-## 免费功能
+Cloudflare Workers Static Assets + Workers API + D1。页面、登录、客户库和跟进记录均运行在Cloudflare，不需要Mac开机、localhost或本机文件服务。保留中文界面、农机/润滑油/输送机资料、Google/Bing搜索方案、规则评分、五语模板及中文参考、WhatsApp人工审核和CSV/JSON导入导出。
 
-1. **搜索方案**：按产品、国家、客户类型生成查询词；打开Google或Bing查找公开来源，下载TXT方案。不自动抓取或生成虚构企业名单。
-2. **客户库**：新增、编辑、搜索、按进展筛选、排序；CSV和JSON导入导出、完整JSON备份。可下载空白CSV模板，支持英文name/company/company_name表头和JSON客户数组。每次导入最多3000条，5MB；同ID/同网站合并，拒收保护保留。
-3. **免费筛选**：按所选产品对客户名称和主营简介评分，显示依据与待核实项；本地规则，不是大模型或采购概率。支持分数排序和最低分筛选。
-4. **手动AI辅助**：在客户库展开可选功能，为当前可见客户最多20条生成结构化指令，自行复制到已有AI聊天工具，再粘贴返回JSON、人工确认后应用。无需API；工具可用性及免费额度取决于用户已有账号。不自动向AI发送资料，不包含电话和联系历史。客户资料或产品变化后旧结果不能应用；不修改企业身份、联系方式和许可。没有实际运行模型，测试使用合成评分验证往返流程。
-5. **话术**：英语/土耳其语/西班牙语/法语/俄语及中文参考；英文按客户名称和场景提供三种措辞，可切换和编辑。本地模板不理解任意备注；深度定制可复制润色指令到已有AI工具。不能保证不同客户绝不相似，也不能保证账号不受限制。
-6. **WhatsApp半自动**：要求国际号码、已确认许可及依据、人工审核，只打开wa.me预填内容。实际发送由本人在WhatsApp中操作，打开不算发送。切换客户、语言、话术会撤销审核；拒收后停止联系。跟进日期和联系记录仅本机保存。
+## 登录和数据
 
-## MacBook使用
+单用户账号 owner，初始随机密码在本机私人凭据文件中，未放入仓库或聊天。服务端仅保存Cloudflare Secret中的PBKDF2密码哈希。登录使用Secure/HttpOnly/SameSite=Strict cookie，7天到期；D1保存哈希后的会话标识，退出后会话失效。API受身份验证、同源检查、CSRF令牌、输入校验和请求限流保护。公开静态代码不包含客户资料或密钥。
 
-双击 `启动LeadPilot.command`，浏览器打开本机地址；不用安装Node或npm，需现有Python3（此Mac已有）。如果系统提示选择应用，选“终端”。启动窗口保持打开；关闭窗口停止本机服务。也可直接使用线上原网址。
+客户实际写入D1 leads表，公司资料和版本号写入app_state。云端构建不把客户数据写入localStorage或离线缓存。成功保存必须等待数据库确认；保存失败不显示成功；旧版本写入返回409，防止另一设备的新记录被覆盖。云端客户库限制3000条、规范化JSON总量1MB，联系历史每客户保留最近200项。
 
-本机只监听127.0.0.1，只提供9个应用文件，禁止访问.git、后端和其他项目文件。手机不要打开Mac的127.0.0.1，请使用上面的HTTPS网址。
+设置里可以刷新其他设备的最新数据、下载服务器提供的JSON/CSV备份。JSON包括公司资料及联系历史，CSV是表格交换格式。导入按ID/同网站合并；拒收保护保留。断网时不能保存云端数据。
 
-开发检查：
+## 旧版数据迁移
+
+旧入口：https://a15532712102-commits.github.io/leadpilot-ai/
+
+旧GitHub Pages和localhost的浏览器数据不会被服务器自动读取或删除。请在原来的浏览器打开旧版，点击“导出本页旧客户JSON”，再登录云端，在设置中选择该JSON合并导入。跨网站localStorage受浏览器隔离，不能绕过。
+
+迁移流程已用明确标注的合成记录在线验证，包括联系历史。没有读取用户旧浏览器中的真实记录，不能声称实际用户数据已全部迁移。当前工作区没有发现真实客户备份文件。
+
+## 搜索、评分和话术
+
+- 免费搜索生成Google/Bing链接，用户打开公开来源核实官网和主营，再添加或导入。没有搜索API时不自动产生企业名单，不虚构联系人、号码或邮箱。
+- 本地规则评分可立即使用；可以复制AI辅助指令到已有工具，再粘贴JSON结果，经人工确认应用。规则与模板明确标注，不能视为大模型调用。
+- 保留服务端search/score/message接口；搜索当前返回501并指引免费工作流，大模型密钥缺失时返回501。不会请求Brave或OpenAI，也没有新购服务。
+- 英文模板提供三种表达，支持中文参考、编辑和人工审核。其他四种语言模板保留。
+- WhatsApp只打开wa.me预填链接，号码、许可依据和审核必须齐备；实际发送由用户自己操作，打开不自动标为发送。变化会撤销审核；拒收后停止联系。不承诺避免封号。
+
+## iPhone / PWA
+
+Safari打开正式HTTPS入口，登录后点击分享→添加到主屏幕。Safari和主屏幕可以分别登录同一账号，数据来自同一D1数据库。Mac可以关闭。静态外壳可缓存，API和客户内容不进入缓存；联网登录后才能读取和保存云端数据。
+
+## 开发、测试和部署
+
+Node 22.13+（需要node:sqlite用于测试）、npm、Cloudflare授权。
+
 ```sh
 npm ci
 npm test
 npm run check
-npm start
-npm run test:browser
+npm run build:worker
+npm run db:migrate
+npm run deploy:cloud
 ```
-浏览器首次运行需安装Playwright浏览器。Mac可双击 `scripts/本机浏览器测试.command`，结果保存为 `test-results-local.log`。当前Codex受限环境无法启动Chromium/WebKit，不能将此次浏览器测试标为通过。详见TEST_REPORT.md。
 
-## iPhone使用与备份
+npm test自动构建dist，再运行核心/DOM/SQLite/Worker回归。dist由scripts/build-cloud.mjs从共享源码生成，不提交；运行时不需要Node服务器。npm run deploy:worker已指向云端部署，避免误把旧API配置覆盖到正式站。
 
-Safari打开原网址 → 分享 → 添加到主屏幕。首次联网加载后，客户库、搜索方案、本地筛选及模板可离线；外部搜索、AI聊天工具和WhatsApp需要网络。旧版页面更新后应关闭所有旧标签页/主屏幕窗口并重新打开；不要清除网站数据，以免客户丢失。
+权威配置是backend/wrangler.cloud.jsonc。backend/wrangler.jsonc和旧verify_live.py仅保留历史参考，不能用于覆盖当前云端部署。Cloudflare授权与Secret设置均在本机安全完成，禁止提交密码或密钥。
 
-客户只保存在当前浏览器，Mac、手机、Safari和主屏幕应用不自动同步；用设置里的JSON备份迁移。清理浏览器数据会丢失记录；建议定期导出。CSV不包含完整联系历史，迁移用JSON。
-
-## 未来联网接口
-
-保留原Worker `https://leadpilot-search-private.a15532712102.workers.dev` 及search/score/message/health接口。本次不修改Worker，不开通服务或配置第三方密钥。
-设置里的“未来接入”默认关闭；未启用时不发出任何Worker请求。未来明确启用并配置后台后才调用；需自行确认Brave结果保存权限、服务额度和费用。访问令牌只放会话存储，导出不含令牌。第三方密钥只放后台Secrets，不能填在公开网页中。
-
-Worker原有认证、精确Origin、限流、40KB限制、上游超时和安全错误处理保留。APP_ORIGIN仍是 https://a15532712102-commits.github.io 。本地服务与免费版不依赖Worker。
-
-## 发布与回滚
-
-使用原仓库main与GitHub Pages，不强推，不新建Worker。发布前运行逻辑及语法检查并检查远端没有新提交。生产验收区分资源加载、DOM逻辑、真实浏览器和iPhone实机；未完成的检查保留在TEST_REPORT.md。
-
-回滚前先JSON备份。使用git revert本次免费版发布提交后push，不能强推覆盖其他修改。新版本兼容旧localStorage键 leadpilot_mobile_v1 和version2 JSON；撤销版本不自动回滚本地客户修改。
+交付和维护见CLOUD_HANDOVER.md，真实测试证据见TEST_REPORT.md。当前自动浏览器验证采用Cloudflare远程Chromium，不等价于真实iPhone Safari或WhatsApp应用发送验收。

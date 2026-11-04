@@ -8,3 +8,5 @@
 input,select,textarea,.textarea-result{font-size:16px!important}.toast{white-space:normal;max-width:calc(100vw - 32px);width:max-content;border-radius:14px;overflow-wrap:anywhere}.panel,.field,.panes>*,.copybox{min-width:0} .tip,.notice{overflow-wrap:anywhere}.nav button{min-height:48px}.leadfooter .btn{min-height:44px} .modalbg{padding-top:env(safe-area-inset-top)}
 
 .free-ai{margin:14px 0;padding:12px;border:1px solid var(--border);border-radius:12px}summary{cursor:pointer;font-weight:700;padding:8px 0;color:var(--mint)}details[open]>summary{margin-bottom:12px}.query .qfoot{flex-wrap:wrap}.query .qfoot button{min-height:44px;min-width:44px}.hint{overflow-wrap:anywhere}#reviewPrompt{min-height:180px}#reviewResult{min-height:130px}
+
+.cloud-login{max-width:430px;margin:10vh auto;padding:16px}.cloud-locked .app,.cloud-locked #nav,.cloud-locked #modalBg{display:none!important}.cloud-busy:after{content:"正在保存云端…";position:fixed;inset:0;z-index:100;background:#071b22a8;display:grid;place-items:center;color:var(--mint);font-size:18px;cursor:wait}#cloudError{overflow-wrap:anywhere;color:var(--gold)}

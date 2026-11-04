@@ -10,7 +10,7 @@ from urllib.parse import unquote, urlsplit
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 FILES = {'/', '/index.html', '/app.js', '/core.js', '/app.css', '/sw.js',
-         '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png',
+         '/manifest.webmanifest', '/cloud-client.js', '/icons/icon-192.png', '/icons/icon-512.png',
          '/icons/apple-touch-icon.png'}
 
 class Handler(http.server.SimpleHTTPRequestHandler):

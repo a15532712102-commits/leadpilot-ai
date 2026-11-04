@@ -7,11 +7,12 @@
 <link rel="stylesheet" href="./app.css">
 </head>
 <body>
+<section id="cloudLogin" class="cloud-login hidden"><div class="panel"><h1>LeadPilot 云端工作台</h1><p>登录后在手机使用客户库，无需Mac保持开机。</p><form id="cloudLoginForm"><div class="field"><label for="cloudUsername">账号</label><input id="cloudUsername" autocomplete="username" value="owner" required></div><div class="field"><label for="cloudPassword">密码</label><input id="cloudPassword" type="password" autocomplete="current-password" minlength="12" maxlength="256" required></div><button class="btn primary" id="cloudLoginButton" type="submit">登录云端</button></form><p id="cloudError" role="status" aria-live="polite"></p><p class="notice">首次密码保存在你的本机私人凭据文件中；请保存到自己的密码管理器。不要在聊天发送密码。</p></div></section>
 <div class="app">
 <header class="top"><div class="brand"><div class="logo">↗</div><div><b>LeadPilot <span style="color:var(--mint)">AI</span></b><small>免费客户工作台 · 无需密钥</small></div></div><span class="badge" id="apiBadge">● 基础模式</span></header>
 <section class="intro"><div class="eyebrow">FIND · QUALIFY · CONNECT</div><h1>好客户，从这里开始。</h1><p>生成海外客户搜索方案，导入并筛选客户，准备英文话术，逐条联系和跟进。免费功能无需注册其他服务。</p></section>
 <div class="stats"><div class="stat"><strong id="stAll">0</strong><small>客户线索</small></div><div class="stat"><strong id="stHot">0</strong><small>高潜力客户</small></div><div class="stat"><strong id="stFollow">0</strong><small>正在跟进</small></div></div>
-<main>
+<main><div id="legacyCloudNotice" class="panel"><strong>云端版已上线，Mac无需开机</strong><p class="notice">本页保留旧浏览器数据。先导出JSON，再登录云端合并导入一次；不要清理本页的网站数据。</p><div class="btnrow"><button class="btn secondary" id="legacyBackup">导出本页旧客户JSON</button><a class="btn primary" href="https://leadpilot-search-private.a15532712102.workers.dev" target="_blank" rel="noopener">进入云端版 ↗</a></div></div><div id="cloudBar" class="panel hidden"><strong id="cloudStatus">D1 云端</strong><div class="btnrow"><button class="btn secondary" id="refreshCloud">刷新云端</button><button class="btn ghost" id="logoutCloud">退出登录</button></div><p class="notice">手机与Mac使用同一账号读取云端数据。另一设备修改后请刷新；断网时不能保存。</p></div>
 <section class="page active" id="page-find">
 <div class="panes"><div>
 <div class="panel"><div class="panel-title"><h2>🔎 第一步 · 搜客户</h2><span class="small">按国家精准查找</span></div>

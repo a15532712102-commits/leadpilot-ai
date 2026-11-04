@@ -1,0 +1,16 @@
+CREATE TABLE IF NOT EXISTS app_state (
+  id INTEGER PRIMARY KEY CHECK(id=1), revision INTEGER NOT NULL DEFAULT 0,
+  settings TEXT NOT NULL DEFAULT '{}', write_id TEXT NOT NULL DEFAULT '',
+  updated INTEGER NOT NULL DEFAULT 0
+);
+INSERT OR IGNORE INTO app_state(id) VALUES(1);
+CREATE TABLE IF NOT EXISTS leads (
+  id TEXT PRIMARY KEY, name TEXT NOT NULL, country TEXT NOT NULL DEFAULT '',
+  website_host TEXT UNIQUE, position INTEGER NOT NULL DEFAULT 0, data TEXT NOT NULL CHECK(json_valid(data))
+);
+CREATE INDEX IF NOT EXISTS leads_name ON leads(name);
+CREATE TABLE IF NOT EXISTS sessions (
+  hash TEXT PRIMARY KEY, csrf TEXT NOT NULL, expires INTEGER NOT NULL,
+  created INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS sessions_expires ON sessions(expires);

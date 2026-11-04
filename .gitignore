@@ -7,3 +7,10 @@ test-results/
 .DS_Store
 test-results-local.log
 live-results.json
+
+dist/
+*.credentials
+
+login-private.json
+login-password-hash.txt
+LeadPilot_云端登录凭据.txt

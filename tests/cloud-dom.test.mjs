@@ -1,0 +1,31 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import {DatabaseSync} from 'node:sqlite';
+import {JSDOM} from 'jsdom';
+import cloud,{passwordHash,readState} from '../backend/src/cloud.js';
+import * as core from '../core.js';
+const root=new URL('../',import.meta.url);
+const html=await readFile(new URL('dist/index.html',root),'utf8');
+const code=(await readFile(new URL('dist/app.js',root),'utf8')).replace(/^import .*?;\n/,'');
+const client=(await readFile(new URL('cloud-client.js',root),'utf8')).replace('export class CloudStore','window.CloudStore=class CloudStore');
+const schema=await readFile(new URL('backend/migrations/0001_cloud.sql',root),'utf8');
+class DB{
+ constructor(){this.sql=new DatabaseSync(':memory:');this.sql.exec(schema)}
+ prepare(sql){const db=this;let args=[];return {bind(...a){args=a;return this},async first(){return db.sql.prepare(sql).get(...args)||null},async all(){return {results:db.sql.prepare(sql).all(...args)}},async run(){return {meta:{changes:Number(db.sql.prepare(sql).run(...args).changes)}}}}}
+ async batch(statements){this.sql.exec('BEGIN');try{const rows=[];for(const s of statements)rows.push(await s.run());this.sql.exec('COMMIT');return rows}catch(e){this.sql.exec('ROLLBACK');throw e}}
+}
+const hash=await passwordHash('Synthetic-cloud-test-password');
+function backend(){return {DB:new DB(),LOGIN_PASSWORD_HASH:hash,REQUEST_LIMITER:{limit:async()=>({success:true})},LOGIN_LIMITER:{limit:async()=>({success:true})}}}
+const tick=()=>new Promise(r=>setTimeout(r,15));
+async function setup(t,env=backend(),jar={cookie:''}){
+ const dom=new JSDOM(html,{url:'https://cloud.example.org',runScripts:'outside-only'});t.after(()=>dom.window.close());const w=dom.window;Object.assign(w,core);w.scrollTo=()=>{};w.confirm=()=>true;w.HTMLElement.prototype.scrollIntoView=()=>{};let gate=null,fail=false;
+ w.URL.createObjectURL=b=>{w.lastBlob=b;return 'blob:test'};w.URL.revokeObjectURL=()=>{};w.open=url=>{w.opened=url};
+ w.fetch=async(path,opts={})=>{if(opts.method==='PUT'){if(gate)await gate;if(fail)return new Response(JSON.stringify({error:'synthetic storage error'}),{status:503})}const headers={...opts.headers,...(jar.cookie?{Cookie:jar.cookie}:{}),...((opts.method||'GET')!=='GET'?{Origin:w.location.origin}:{})};const r=await cloud.fetch(new Request(new URL(path,w.location.origin),{method:opts.method||'GET',headers,...(opts.body?{body:opts.body}:{})}),env);const cookie=r.headers.get('Set-Cookie');if(cookie)jar.cookie=cookie.split(';')[0];return r};
+ w.localStorage.setItem('leadpilot_mobile_v1',JSON.stringify({leads:[{id:'old-local',name:'Private old browser record'}]}));w.eval(client);w.eval(code);for(let i=0;i<200&&w.document.getElementById('cloudError').textContent==='正在验证登录…';i++)await tick();
+ return {w,env,jar,$:id=>w.document.getElementById(id),async click(id){await w.document.getElementById(id).onclick?.()},async login(){w.document.getElementById('cloudPassword').value='Synthetic-cloud-test-password';await w.document.getElementById('cloudLoginForm').onsubmit(new w.Event('submit',{cancelable:true}))},setGate(v){gate=v},failSave(){fail=true}};
+}
+test('cloud page ignores old localStorage, requires login and does not cache customers locally',async t=>{const c=await setup(t);assert.equal(c.w.document.body.classList.contains('cloud-locked'),true);assert.equal((await readState(c.env.DB)).leads.length,0);await c.login();assert.equal(c.w.document.body.classList.contains('cloud-locked'),false);assert.equal(JSON.parse(c.w.localStorage.getItem('leadpilot_mobile_v1')).leads[0].id,'old-local');assert.equal(c.$('setToken').closest('.field').classList.contains('hidden'),true)});
+test('cloud form waits for actual SQL write; reload reads durable record in another page',async t=>{const c=await setup(t);await c.login();await c.click('addLead');c.$('fName').value='Synthetic Cloud Buyer';c.$('fNotes').value='tractor distributor';let release;c.setGate(new Promise(r=>release=r));const saving=c.$('leadForm').onsubmit(new c.w.Event('submit',{cancelable:true}));await tick();assert.match(c.$('cloudStatus').textContent,/正在保存/);assert.equal((await readState(c.env.DB)).leads.length,0);release();await saving;assert.equal((await readState(c.env.DB)).leads.length,1);assert.match(c.$('appStatus').textContent,/客户已保存/);const next=await setup(t,c.env,c.jar);await tick();assert.match(next.$('leadList').textContent,/Synthetic Cloud Buyer/);assert.equal(JSON.parse(next.w.localStorage.getItem('leadpilot_mobile_v1')).leads[0].id,'old-local')});
+test('cloud persistence failure never claims success or closes unsaved form',async t=>{const c=await setup(t);await c.login();c.failSave();await c.click('addLead');c.$('fName').value='Unsaved cloud buyer';await c.$('leadForm').onsubmit(new c.w.Event('submit',{cancelable:true}));assert.equal((await readState(c.env.DB)).leads.length,0);assert.match(c.$('appStatus').textContent,/未确认保存/);assert.equal(c.$('modalBg').style.display,'flex');assert.equal(c.$('fName').value,'Unsaved cloud buyer')});
+test('old JSON import migrates customer and WhatsApp history to cloud, logout hides private state',async t=>{const c=await setup(t);await c.login();const data={version:2,leads:[{id:'migration-test',name:'Synthetic migrated record',whatsapp:'+12025550101',waConsent:'yes',waConsentSource:'Synthetic permission',waHistory:[{kind:'reply',at:100,note:'Test history'}]}]};await c.$('importJson').onchange({target:{files:[{name:'old.json',size:100,text:async()=>JSON.stringify(data)}],value:''}});assert.equal((await readState(c.env.DB)).leads[0].waHistory[0].kind,'reply');await c.click('waGenerate');c.$('waReview').checked=true;c.$('waReview').dispatchEvent(new c.w.Event('change'));await c.click('waOpen');assert.match(c.w.opened,/https:\/\/wa.me\/12025550101\?text=/);assert.equal((await readState(c.env.DB)).leads[0].waHistory.at(-1).kind,'opened');await c.click('logoutCloud');assert.equal(c.w.document.body.classList.contains('cloud-locked'),true);assert.equal(c.$('waDraft').value,'');assert.equal(c.$('fName').value,'');assert.equal(c.$('reviewPrompt').value,'');assert.doesNotMatch(c.$('leadList').textContent,/Synthetic migrated record/)});

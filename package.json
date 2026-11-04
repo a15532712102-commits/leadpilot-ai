@@ -1,17 +1,21 @@
 {
   "name": "leadpilot-ai-mobile",
-  "version": "1.3.0",
+  "version": "2.0.0",
   "private": true,
   "type": "module",
   "scripts": {
     "start": "python3 scripts/serve.py --port 4173",
-    "test": "node --test tests/*.test.mjs",
+    "test": "node scripts/build-cloud.mjs && node --test --test-concurrency=1 tests/*.test.mjs",
     "check:worker": "node --check backend/src/worker.js",
-    "dev:worker": "wrangler dev --config backend/wrangler.jsonc",
-    "deploy:worker": "wrangler deploy --config backend/wrangler.jsonc",
+    "dev:worker": "npm run dev:cloud",
+    "deploy:worker": "npm run deploy:cloud",
     "test:browser": "playwright test",
-    "check": "node --check app.js && node --check core.js && node --check backend/src/worker.js",
-    "build:worker": "wrangler deploy --dry-run --config backend/wrangler.jsonc"
+    "check": "node --check app.js && node --check core.js && node --check backend/src/worker.js && node --check cloud-client.js && node --check backend/src/cloud.js",
+    "build:worker": "npm run build:cloud && wrangler deploy --dry-run --config backend/wrangler.cloud.jsonc",
+    "build:cloud": "node scripts/build-cloud.mjs",
+    "dev:cloud": "npm run build:cloud && wrangler dev --config backend/wrangler.cloud.jsonc",
+    "deploy:cloud": "npm run build:cloud && wrangler deploy --config backend/wrangler.cloud.jsonc",
+    "db:migrate": "wrangler d1 migrations apply leadpilot-cloud --remote --config backend/wrangler.cloud.jsonc"
   },
   "devDependencies": {
     "@playwright/test": "^1.64.1",

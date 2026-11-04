@@ -1,28 +1,35 @@
-# LeadPilot 1.3.0 免费版测试报告
+# LeadPilot 云端2.0.0 实际验收记录
 
-日期：2026-11-04（Asia/Shanghai）
+日期：2026-11-04至2026-11-05（Asia/Shanghai）。本报告更新覆盖旧1.3本地版状态，历史见docs/TEST_REPORT_1.3.0.md。
 
-## 本次范围
+## 已完成部署
 
-用户要求暂停Brave和需绑卡付费服务，优先可运行免费版。默认关闭所有联网API；保留未来接口。新增免费搜索方案导出、Bing入口、客户导入入口及空白CSV模板、批量规则筛选/排序/分数过滤、手动AI指令与评分回填、三种英文话术、Mac启动器。
+正式HTTPS网址：https://leadpilot-search-private.a15532712102.workers.dev/
 
-没有接入Brave或OpenAI；没有模拟成真实企业搜索；本地评分明确为规则。手动AI测试中的评分来自测试数据，不代表模型质量测试。没有发送WhatsApp消息。本次不修改原Worker。
+原Worker已升级为Static Assets + Workers API + D1，不是只上传界面。D1实际新建leadpilot-cloud（cc8d2e27-ff72-4356-bc0a-3425d1c70b8d），0001_cloud.sql远端迁移成功，创建app_state/leads/sessions及索引。ASSETS和DB绑定已实际部署；原Worker源码和配置已有私人备份。
 
-## 已完成检查
+当前线上Worker版本：64b88ad2-3c89-4b53-8d7b-25be70a4d17f。LOGIN_PASSWORD_HASH已通过Cloudflare Secret安全配置；未接Brave/OpenAI，不购买域名，不开通付费计划。
 
-- 47/47 Node核心、DOM操作及Worker回归测试通过。包含CSV/JSON导入原子性与拒收保护、免费流程零API请求、评分排序、英文及中文对照变化、撤销WhatsApp审核、手动AI结果ID/数值校验和过期资料保护。Worker上游均为mock。
-- app.js、core.js、backend/src/worker.js语法检查通过；git diff --check通过。
-- Mac本机Python服务实际启动成功，根页面、app.js、core.js、manifest及图标HTTP 200且MIME正确；.git/config、后端配置和启动脚本HTTP 404。验证使用直连localhost，不经过系统代理。
-- 与远端main比较，开始修改时为1ed575356e61dee56b24742e1ba0c072f24ab54f，无其他人更新。
+## 代码及数据库验证
 
-## 浏览器及手机限制（不可视为通过）
+61项核心/DOM/SQLite/Worker测试通过。新增认证、CSRF、密码哈希、会话撤销、持久化CRUD、SQL批处理回滚、多设备旧版本冲突、同网站改ID仍保留拒收、JSON/CSV服务器备份、客户资料不写浏览器存储、等待数据库确认再显示成功、保存失败保留编辑窗口，以及旧JSON历史迁移。SQLite是真实执行SQL；不能将其称为Cloudflare D1线上测试。
 
-已更新24项Playwright用例，覆盖Chromium390×844和WebKit430×932。此次环境无法启动浏览器：Chromium MachPortRendezvousServer Permission denied；WebKit进程退出134。24项均因浏览器启动失败而未执行应用操作，不是24项通过，也不能据此判断页面功能失败。
+构建、语法及Wrangler dry-run通过。免费原功能回归保留；npm test会先生成dist，源码克隆后不依赖已存在的构建产物。
 
-上一版1.2.0曾由用户在Mac正常终端执行20/20浏览器用例通过；这不是免费版1.3.0的验收结果。免费版需在正常Mac会话双击 scripts/本机浏览器测试.command 重新验证，并在实际iPhone检查布局、键盘、下载、主屏幕与WhatsApp唤起。
+## 真实线上HTTP与D1
 
-## 部署状态
+已验证：正确密码登录并发出Secure/HttpOnly/SameSite=Strict cookie；未登录401；跨站/错误CSRF403；旧版本写入409。真实D1客户新增、编辑、独立HTTPS请求重读、跟进日期及联系历史保存、服务端关键词查找、规则评分、退出撤销会话。测试记录明确标注为合成验收资料，已删除，未当作真实客户；没有发送消息。
 
-免费版发布提交：4a7fca39324cb210f2751dedeb0f4c79e582e4d5。已推送原仓库main，GitHub Pages构建成功（built，无错误）。index.html、app.js、core.js、app.css、manifest.webmanifest、sw.js及3个图标均HTTP 200，内容哈希与本地一致。原线上网址保持 https://a15532712102-commits.github.io/leadpilot-ai/ 。原Worker未修改。线上核对仅证明交付文件正确，不等价于真实浏览器操作验收。
+实际线上HTTP/D1共11项流程检查通过。认证服务器JSON/CSV导出均返回正确attachment文件名，JSON不含密码、令牌或CSRF。最新D1查询版本26、客户数0：合成测试记录已清理，不代表用户旧浏览器没有客户。
 
-本机代码和免费工作流已完成；真实浏览器、实际AI评分质量、WhatsApp手机唤起仍未验收。搜索方案需要用户打开公开搜索网站核实企业，不能声称已自动找到真实客户。
+## 真实浏览器与边界
+
+Cloudflare远程Chromium访问实际正式网址，12项流程检查通过。包括真实登录、390/430px五页布局无横向溢出、16px输入、Google/Bing查询链接按钮、真实表单新增/编辑刷新读取、CSV及旧JSON历史导入、备份真实下载、英文表达切换、WhatsApp审核与wa.me预填、“已打开”历史写入D1、独立浏览器登录后读取相同客户且无localStorage、没有页面JS错误、测试数据清理。首次Blob文件名问题已改为服务器attachment，并复验下载的JSON文件名正确。WhatsApp链接在测试中拦截并检查，未发送。
+
+实际iPhone Safari、主屏幕安装、当地网络和WhatsApp应用唤起尚未实机确认；远程Chromium不能代替这些检查。测试仅验证预填链接和“已打开但未发送”逻辑，不发送消息。没有搜索API，因此不能声称系统自动找到真实企业；真实模式是搜索链接+人工核实/导入。没有大模型密钥，评分/话术显示规则/模板。
+
+最终版另已实际验证：退出登录清空未保存的客户字段和备注，已撤销会话再访问API返回401。最终10个静态资源均HTTP 200，SHA-256与dist完全一致。
+
+## 旧用户数据
+
+没有在工作区找到真实客户备份，也无法跨站读取旧浏览器localStorage。已提供旧站导出入口和云端合并导入，兼容性经合成记录实际在线验证；用户现存旧记录尚未自动迁移，需一次导出导入并核对。
