@@ -23,6 +23,6 @@
 
 ## 部署状态
 
-免费版发布和线上静态资源核对：待执行。测试完成后更新本节。原线上网址为 https://a15532712102-commits.github.io/leadpilot-ai/ 。
+免费版发布提交：4a7fca39324cb210f2751dedeb0f4c79e582e4d5。已推送原仓库main，GitHub Pages构建成功（built，无错误）。index.html、app.js、core.js、app.css、manifest.webmanifest、sw.js及3个图标均HTTP 200，内容哈希与本地一致。原线上网址保持 https://a15532712102-commits.github.io/leadpilot-ai/ 。原Worker未修改。线上核对仅证明交付文件正确，不等价于真实浏览器操作验收。
 
 本机代码和免费工作流已完成；真实浏览器、实际AI评分质量、WhatsApp手机唤起仍未验收。搜索方案需要用户打开公开搜索网站核实企业，不能声称已自动找到真实客户。
