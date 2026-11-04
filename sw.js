@@ -1,4 +1,4 @@
-const CACHE='leadpilot-static-1.2.0';
+const CACHE='leadpilot-static-1.3.0';
 const ASSETS=['./','./index.html','./app.css','./app.js','./core.js','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png','./icons/apple-touch-icon.png'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS))));
 // New code activates on the next app launch, avoiding an update mid-edit.

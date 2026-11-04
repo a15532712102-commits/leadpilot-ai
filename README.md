@@ -1,58 +1,48 @@
-# LeadPilot AI 1.2.0
+# LeadPilot 免费版 1.3.0
 
-单用户外贸客户助手：真实网页搜索候选、本地规则 / AI 辅助评分、五种语言话术和中文对照、CRM、人工确认的 WhatsApp 草稿、JSON / CSV 备份、离线应用外壳。
+无需Brave、OpenAI密钥、银行卡或后端连接的单用户外贸工作台。原地址保持不变：
+https://a15532712102-commits.github.io/leadpilot-ai/
 
-**目前是待部署修复版。代码测试通过不等于生产服务已验证。** 详情见 `TEST_REPORT.md`。
+## 免费功能
 
-## 既有资源
+1. **搜索方案**：按产品、国家、客户类型生成查询词；打开Google或Bing查找公开来源，下载TXT方案。不自动抓取或生成虚构企业名单。
+2. **客户库**：新增、编辑、搜索、按进展筛选、排序；CSV和JSON导入导出、完整JSON备份。可下载空白CSV模板，支持英文name/company/company_name表头和JSON客户数组。每次导入最多3000条，5MB；同ID/同网站合并，拒收保护保留。
+3. **免费筛选**：按所选产品对客户名称和主营简介评分，显示依据与待核实项；本地规则，不是大模型或采购概率。支持分数排序和最低分筛选。
+4. **手动AI辅助**：在客户库展开可选功能，为当前可见客户最多20条生成结构化指令，自行复制到已有AI聊天工具，再粘贴返回JSON、人工确认后应用。无需API；工具可用性及免费额度取决于用户已有账号。不自动向AI发送资料，不包含电话和联系历史。客户资料或产品变化后旧结果不能应用；不修改企业身份、联系方式和许可。没有实际运行模型，测试使用合成评分验证往返流程。
+5. **话术**：英语/土耳其语/西班牙语/法语/俄语及中文参考；英文按客户名称和场景提供三种措辞，可切换和编辑。本地模板不理解任意备注；深度定制可复制润色指令到已有AI工具。不能保证不同客户绝不相似，也不能保证账号不受限制。
+6. **WhatsApp半自动**：要求国际号码、已确认许可及依据、人工审核，只打开wa.me预填内容。实际发送由本人在WhatsApp中操作，打开不算发送。切换客户、语言、话术会撤销审核；拒收后停止联系。跟进日期和联系记录仅本机保存。
 
-- 前端：https://a15532712102-commits.github.io/leadpilot-ai/
-- 仓库：https://github.com/a15532712102-commits/leadpilot-ai （main）
-- 后端：https://leadpilot-search-private.a15532712102.workers.dev
-- APP_ORIGIN：`https://a15532712102-commits.github.io`
+## MacBook使用
 
-保留这三个地址。不得另建仓库或 Worker。APP_ORIGIN 是 origin，不带 `/leadpilot-ai/` 路径。
+双击 `启动LeadPilot.command`，浏览器打开本机地址；不用安装Node或npm，需现有Python3（此Mac已有）。如果系统提示选择应用，选“终端”。启动窗口保持打开；关闭窗口停止本机服务。也可直接使用线上原网址。
 
-## 本地运行与测试
+本机只监听127.0.0.1，只提供9个应用文件，禁止访问.git、后端和其他项目文件。手机不要打开Mac的127.0.0.1，请使用上面的HTTPS网址。
 
-需要 Node.js 22+、npm、Python 3。
-
+开发检查：
 ```sh
 npm ci
 npm test
 npm run check
-npx playwright install chromium webkit
+npm start
 npm run test:browser
-npm run build:worker
 ```
+浏览器首次运行需安装Playwright浏览器。Mac可双击 `scripts/本机浏览器测试.command`，结果保存为 `test-results-local.log`。当前Codex受限环境无法启动Chromium/WebKit，不能将此次浏览器测试标为通过。详见TEST_REPORT.md。
 
-Mac 用户也可双击 `scripts/本机浏览器测试.command`（使用此电脑已安装的 Node）。浏览器测试需要正常的本机进程权限；在受限环境启动失败不代表功能测试通过。测试仅使用 example.org 和 +1 202 555 01xx 虚构号码，拦截 WhatsApp 打开动作，不发送消息。
+## iPhone使用与备份
 
-查看本地页面：`python3 -m http.server 4173 --bind 127.0.0.1`，浏览器打开 http://127.0.0.1:4173 。
+Safari打开原网址 → 分享 → 添加到主屏幕。首次联网加载后，客户库、搜索方案、本地筛选及模板可离线；外部搜索、AI聊天工具和WhatsApp需要网络。旧版页面更新后应关闭所有旧标签页/主屏幕窗口并重新打开；不要清除网站数据，以免客户丢失。
 
-## 使用与数据
+客户只保存在当前浏览器，Mac、手机、Safari和主屏幕应用不自动同步；用设置里的JSON备份迁移。清理浏览器数据会丢失记录；建议定期导出。CSV不包含完整联系历史，迁移用JSON。
 
-- 搜索结果是 Brave 网页标题及摘要，**不代表认证企业、已核实国家、可采购客户或联系许可**。每次搜索一条组合查询，最多 7 个结果，按网站主机名去重。点击来源自行核实企业及网页是否可访问。
-- 规则评分仅依据标题、摘要中的关键词，界面标注来源。AI评分不改变已确认国家和客户类型，预测仅作为参考。
-- AI 利用当前客户资料、产品和已确认需求写个性化消息；加入最近3条人工确认发送的消息以避免机械重复。不会为了逃避检测随机改写。资料不足时提示补充，不编造事实。
-- 离线模板覆盖英语、土耳其语、俄语、西班牙语、法语；三个产品方向均有对应译名。自定义产品保留用户原文，模板明确提示人工核对翻译。模板不理解客户备注，深度个性化需 AI 或手动编辑。
-- WhatsApp 必须有联系许可、依据、国际号码、人工审核。只打开 `wa.me` 草稿，用户在 WhatsApp 内自己点击发送。返回不会自动标记发送。拒收后停联，导入旧备份也不能撤销拒收。改变客户或内容会撤销审核。
-- 最近发送话术与当前内容的词集合相似度达80%会提醒。此规则不是平台检测模型，不承诺免于限制或封号。
-- localStorage 保持旧 `leadpilot_mobile_v1` 键，内容迁移为 version2。客户只存在当前设备 / 浏览器；清理数据、隐私模式、空间不足都可能影响保存。Safari 与主屏幕容器不保证共享数据。
-- JSON 是完整备份（包括联系历史与公司资料），不包含访问令牌。CSV 用于表格交换，不含完整历史。合并按ID或相同网站主机名处理；跨同域公司需要人工分开核实。导入前请备份。
-- 应用访问令牌仅保留当前标签页 sessionStorage，不是 Brave / OpenAI 密钥。关闭会话后可能需要重新输入。
-- 需要联网成功加载一次后，主屏幕应用外壳、客户库和模板可离线使用；搜索和AI始终需要网络。
+## 未来联网接口
 
-## 安全与费用边界
+保留原Worker `https://leadpilot-search-private.a15532712102.workers.dev` 及search/score/message/health接口。本次不修改Worker，不开通服务或配置第三方密钥。
+设置里的“未来接入”默认关闭；未启用时不发出任何Worker请求。未来明确启用并配置后台后才调用；需自行确认Brave结果保存权限、服务额度和费用。访问令牌只放会话存储，导出不含令牌。第三方密钥只放后台Secrets，不能填在公开网页中。
 
-所有第三方密钥只放 Cloudflare Secrets：APP_ACCESS_TOKEN、BRAVE_API_KEY、可选 OPENAI_API_KEY。没有 AI 密钥时仍可使用明确标注的基础模板。health 只检查密钥是否配置，不能证明密钥有效。
+Worker原有认证、精确Origin、限流、40KB限制、上游超时和安全错误处理保留。APP_ORIGIN仍是 https://a15532712102-commits.github.io 。本地服务与免费版不依赖Worker。
 
-请求体上限40KB；每次最多评分20条。认证前按 IP 限30次/分钟；认证后的付费功能共用6次/分钟限流。Cloudflare 原生限流是**按数据中心的近似限流，不是全球硬费用上限**；在 Brave / OpenAI 账号内另设预算。缺少限流绑定时关闭API，避免退化成无保护代理。每次上游调用有16秒超时，前端22秒，不自动重试付费调用。原始上游错误体不返回客户端。
+## 发布与回滚
 
-来源文档：
-- Cloudflare Rate Limiting：https://developers.cloudflare.com/workers/runtime-apis/bindings/rate-limit/
-- Brave Web Search：https://api-dashboard.search.brave.com/api-reference/web/search/get
+使用原仓库main与GitHub Pages，不强推，不新建Worker。发布前运行逻辑及语法检查并检查远端没有新提交。生产验收区分资源加载、DOM逻辑、真实浏览器和iPhone实机；未完成的检查保留在TEST_REPORT.md。
 
-## 部署与回滚
-
-见 `DEPLOYMENT.md`。必须先完成本机浏览器检查并获得用户的远程更新授权。不得把未完成的真实上游测试标成上线成功。
+回滚前先JSON备份。使用git revert本次免费版发布提交后push，不能强推覆盖其他修改。新版本兼容旧localStorage键 leadpilot_mobile_v1 和version2 JSON；撤销版本不自动回滚本地客户修改。
