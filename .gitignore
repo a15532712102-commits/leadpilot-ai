@@ -1,0 +1,9 @@
+node_modules/
+.wrangler/
+.dev.vars*
+.env*
+playwright-report/
+test-results/
+.DS_Store
+test-results-local.log
+live-results.json

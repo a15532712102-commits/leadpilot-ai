@@ -1,0 +1,27 @@
+{
+  "name": "leadpilot-search-private",
+  "main": "src/worker.js",
+  "compatibility_date": "2026-10-01",
+  "vars": {
+    "APP_ORIGIN": "https://a15532712102-commits.github.io"
+  },
+  "ratelimits": [
+    {
+      "name": "REQUEST_LIMITER",
+      "namespace_id": "184301",
+      "simple": {
+        "limit": 30,
+        "period": 60
+      }
+    },
+    {
+      "name": "COST_LIMITER",
+      "namespace_id": "184302",
+      "simple": {
+        "limit": 6,
+        "period": 60
+      }
+    }
+  ],
+  "preview_urls": false
+}
